@@ -10,9 +10,9 @@ from dotenv import load_dotenv
 load_dotenv()
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-# OpenRouter API settings
+# ✅ Use the newer Mistral 24B model (free for now)
+MODEL = "mistralai/mistral-small-3.2-24b-instruct"
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "mistralai/mistral-7b-instruct"  # Changeable
 
 st.set_page_config(page_title="Free AI Resume Enhancer", layout="centered")
 st.title("📄 Free AI Resume Enhancer (Powered by OpenRouter)")
@@ -48,15 +48,17 @@ if uploaded_file is not None:
 # Paste resume content manually
 st.subheader("2. Review or edit your resume content")
 text_input = st.text_area("Resume Content", resume_text, height=300)
+
+# Check for API key early
 if not OPENROUTER_API_KEY:
-    st.error("API key not found! Check your .env or secrets setup.")
-    
+    st.error("API key not found! Please check your .env file or Streamlit secrets.")
+
 def enhance_resume_with_openrouter(text):
     """Send resume to OpenRouter LLM for enhancement"""
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost"  # Required by OpenRouter.ai
+        "HTTP-Referer": "http://localhost"  # Replace if hosted (e.g., https://yourapp.streamlit.app)
     }
 
     prompt = f"""
@@ -73,12 +75,23 @@ Original Resume:
 """
 
     body = {
-        "model": MODEL,
-        "messages": [
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt}
-        ]
-    }
+    "model": MODEL,
+    "messages": [
+        {
+            "role": "system",
+            "content": (
+                "You are a professional resume writer with deep knowledge of ATS systems and modern hiring trends. "
+                "Your job is to rewrite resumes to sound clear, professional, and tailored for job applications, "
+                "while preserving original meaning and section structure."
+            )
+        },
+        {
+            "role": "user",
+            "content": prompt
+        }
+    ]
+}
+
 
     try:
         response = requests.post(OPENROUTER_API_URL, headers=headers, json=body)
