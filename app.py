@@ -12,7 +12,7 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 # OpenRouter API settings
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "openchat/openchat-7b"  # Changeable
+MODEL = "mistralai/mistral-7b-instruct"  # Changeable
 
 st.set_page_config(page_title="Free AI Resume Enhancer", layout="centered")
 st.title("📄 Free AI Resume Enhancer (Powered by OpenRouter)")
@@ -48,7 +48,9 @@ if uploaded_file is not None:
 # Paste resume content manually
 st.subheader("2. Review or edit your resume content")
 text_input = st.text_area("Resume Content", resume_text, height=300)
-
+if not OPENROUTER_API_KEY:
+    st.error("API key not found! Check your .env or secrets setup.")
+    
 def enhance_resume_with_openrouter(text):
     """Send resume to OpenRouter LLM for enhancement"""
     headers = {
